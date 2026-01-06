@@ -107,3 +107,84 @@ export const cancelSlot = async (dayId, slotIndex, email) => {
     await updateDoc(dayRef, { slots });
     return slots;
 };
+
+/**
+ * Add a user to the waitlist for a booked slot
+ */
+export async function addToWaitlist(dayId, slotIndex, waitlistEntry) {
+    try {
+        const dayRef = doc(db, "days", dayId);
+        const daySnap = await getDoc(dayRef);
+
+        if (!daySnap.exists()) {
+            throw new Error("Tag nicht gefunden");
+        }
+
+        const dayData = daySnap.data();
+        const slot = dayData.slots[slotIndex];
+
+        if (!slot) {
+            throw new Error("Slot nicht gefunden");
+        }
+
+        if (slot.status === "open") {
+            throw new Error("Warteliste nicht möglich für offene Slots");
+        }
+
+        // Initialize waitlist if it doesn't exist
+        if (!slot.waitlist) {
+            slot.waitlist = [];
+        }
+
+        // Check if email already on waitlist
+        if (slot.waitlist.some(entry => entry.email === waitlistEntry.email)) {
+            throw new Error("Du bist bereits auf der Warteliste für diesen Slot");
+        }
+
+        // Add timestamp to entry
+        const entryWithTimestamp = {
+            ...waitlistEntry,
+            timestamp: new Date().toISOString()
+        };
+
+        slot.waitlist.push(entryWithTimestamp);
+        dayData.slots[slotIndex] = slot;
+
+        await updateDoc(dayRef, { slots: dayData.slots });
+        return { success: true };
+    } catch (error) {
+        console.error("Error adding to waitlist:", error);
+        throw error;
+    }
+}
+
+/**
+ * Remove a user from the waitlist
+ */
+export async function removeFromWaitlist(dayId, slotIndex, email) {
+    try {
+        const dayRef = doc(db, "days", dayId);
+        const daySnap = await getDoc(dayRef);
+
+        if (!daySnap.exists()) {
+            throw new Error("Tag nicht gefunden");
+        }
+
+        const dayData = daySnap.data();
+        const slot = dayData.slots[slotIndex];
+
+        if (!slot || !slot.waitlist) {
+            throw new Error("Warteliste nicht gefunden");
+        }
+
+        // Remove entry with matching email
+        slot.waitlist = slot.waitlist.filter(entry => entry.email !== email);
+        dayData.slots[slotIndex] = slot;
+
+        await updateDoc(dayRef, { slots: dayData.slots });
+        return { success: true };
+    } catch (error) {
+        console.error("Error removing from waitlist:", error);
+        throw error;
+    }
+}

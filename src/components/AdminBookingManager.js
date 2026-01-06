@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { createOpenDay, getOpenDays, deleteDay, updateSlot } from "@/lib/bookingService";
+import { createOpenDay, getOpenDays, deleteDay, updateSlot, removeFromWaitlist } from "@/lib/bookingService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,6 +129,49 @@ export default function AdminBookingManager() {
         setDays(updatedDays);
 
         await updateSlot(day.id, updatedSlots);
+    };
+
+    const handleRemoveFromWaitlist = async (day, slotIndex, email) => {
+        try {
+            await removeFromWaitlist(day.id, slotIndex, email);
+            loadDays();
+        } catch (error) {
+            console.error("Error removing from waitlist:", error);
+            alert("Fehler beim Entfernen von der Warteliste");
+        }
+    };
+
+    const handlePromoteFromWaitlist = async (day, slotIndex, waitlistEntry) => {
+        try {
+            const updatedSlots = [...day.slots];
+            const slot = updatedSlots[slotIndex];
+
+            // Check if slot already has a booker
+            if (slot.booker) {
+                const confirmed = confirm(
+                    `Dieser Slot ist bereits von ${slot.booker.firstName} ${slot.booker.lastName} gebucht. ` +
+                    `Möchtest du diese Buchung mit ${waitlistEntry.firstName} ${waitlistEntry.lastName} überschreiben?`
+                );
+                if (!confirmed) return;
+            }
+
+            // Set the waitlist entry as the main booker
+            slot.booker = {
+                firstName: waitlistEntry.firstName,
+                lastName: waitlistEntry.lastName,
+                email: waitlistEntry.email
+            };
+            slot.status = 'unconfirmed';
+
+            // Remove from waitlist
+            slot.waitlist = slot.waitlist.filter(entry => entry.email !== waitlistEntry.email);
+
+            await updateSlot(day.id, updatedSlots);
+            loadDays();
+        } catch (error) {
+            console.error("Error promoting from waitlist:", error);
+            alert("Fehler beim Befördern von der Warteliste");
+        }
     };
 
     const getSlotStats = (day) => {
@@ -264,6 +307,8 @@ export default function AdminBookingManager() {
                                         onBookerEdit={handleBookerEdit}
                                         onBookerCreate={handleBookerCreate}
                                         onDelete={handleDeleteSlot}
+                                        onRemoveFromWaitlist={handleRemoveFromWaitlist}
+                                        onPromoteFromWaitlist={handlePromoteFromWaitlist}
                                     />
                                 ))}
                                 <AddSlotForm day={day} onAddSlot={handleAddSlot} />
@@ -276,7 +321,7 @@ export default function AdminBookingManager() {
     );
 }
 
-function SlotRow({ slot, day, index, onStatusChange, onBookerEdit, onBookerCreate, onDelete }) {
+function SlotRow({ day, slot, index, onStatusChange, onBookerEdit, onBookerCreate, onDelete, onRemoveFromWaitlist, onPromoteFromWaitlist }) {
     const statusColors = {
         open: 'bg-gray-50 border-l-gray-400',
         unconfirmed: 'bg-amber-50 border-l-amber-500',
@@ -376,6 +421,50 @@ function SlotRow({ slot, day, index, onStatusChange, onBookerEdit, onBookerCreat
                     <Trash2 className="w-4 h-4" />
                 </Button>
             </div>
+
+            {/* Waitlist Section */}
+            {slot.waitlist && slot.waitlist.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="text-xs font-semibold text-gray-600 mb-2 flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        Warteliste ({slot.waitlist.length})
+                    </div>
+                    <div className="space-y-2">
+                        {slot.waitlist.map((entry, idx) => (
+                            <div key={idx} className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded p-2">
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-xs font-medium text-gray-900 truncate">
+                                        {entry.firstName} {entry.lastName}
+                                    </div>
+                                    <div className="text-xs text-gray-500 truncate">
+                                        {entry.email}
+                                    </div>
+                                </div>
+                                <div className="flex gap-1 ml-2">
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 px-2 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
+                                        onClick={() => onPromoteFromWaitlist(day, index, entry)}
+                                        title="Befördern"
+                                    >
+                                        ↑
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 px-2 text-xs hover:bg-red-50 text-red-600"
+                                        onClick={() => onRemoveFromWaitlist(day, index, entry.email)}
+                                        title="Entfernen"
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

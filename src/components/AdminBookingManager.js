@@ -10,9 +10,10 @@ import { Trash2, Calendar, Clock, Users, CheckCircle2, Plus } from "lucide-react
 
 export default function AdminBookingManager() {
     const [days, setDays] = useState([]);
-    const [newDayDate, setNewDayDate] = useState("");
-    const [startTime, setStartTime] = useState("09:00");
-    const [endTime, setEndTime] = useState("17:00");
+    const today = new Date().toISOString().split('T')[0];
+    const [newDayDate, setNewDayDate] = useState(today);
+    const [startHour, setStartHour] = useState(9);
+    const [endHour, setEndHour] = useState(17);
     const [duration, setDuration] = useState(60);
     const [loading, setLoading] = useState(false);
 
@@ -29,9 +30,11 @@ export default function AdminBookingManager() {
         e.preventDefault();
         setLoading(true);
         try {
+            const startTime = `${String(startHour).padStart(2, '0')}:00`;
+            const endTime = `${String(endHour).padStart(2, '0')}:00`;
             await createOpenDay(newDayDate, startTime, endTime, parseInt(duration));
             await loadDays();
-            setNewDayDate("");
+            setNewDayDate(today);
         } catch (error) {
             console.error("Error creating day:", error);
             alert("Failed to create day");
@@ -138,37 +141,52 @@ export default function AdminBookingManager() {
     return (
         <div className="space-y-6">
             {/* Create Day Card */}
-            <Card className="border-2 border-blue-100 shadow-sm">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
+            <Card className="border shadow-sm">
+                <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-blue-600" />
-                        <CardTitle className="text-lg">Create New Open Day</CardTitle>
+                        <Calendar className="w-4 h-4 text-blue-600" />
+                        <CardTitle className="text-base">Create New Open Day</CardTitle>
                     </div>
-                    <CardDescription>Set up availability for appointments</CardDescription>
                 </CardHeader>
-                <CardContent className="pt-6">
-                    <form onSubmit={handleCreateDay} className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">Date</Label>
-                            <Input type="date" value={newDayDate} onChange={e => setNewDayDate(e.target.value)} required className="h-10" />
+                <CardContent>
+                    <form onSubmit={handleCreateDay} className="flex flex-wrap gap-3 items-end">
+                        <div className="space-y-1 flex-1 min-w-[140px]">
+                            <Label className="text-xs font-medium">Date</Label>
+                            <Input type="date" value={newDayDate} onChange={e => setNewDayDate(e.target.value)} required className="h-9" />
                         </div>
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">Start Time</Label>
-                            <Input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} required className="h-10" />
+                        <div className="space-y-1 w-28">
+                            <Label className="text-xs font-medium">Start (h)</Label>
+                            <Input
+                                type="number"
+                                value={startHour}
+                                onChange={e => setStartHour(parseInt(e.target.value))}
+                                required
+                                className="h-9"
+                                min="0"
+                                max="23"
+                                step="1"
+                            />
                         </div>
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">End Time</Label>
-                            <Input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} required className="h-10" />
+                        <div className="space-y-1 w-28">
+                            <Label className="text-xs font-medium">End (h)</Label>
+                            <Input
+                                type="number"
+                                value={endHour}
+                                onChange={e => setEndHour(parseInt(e.target.value))}
+                                required
+                                className="h-9"
+                                min="0"
+                                max="23"
+                                step="1"
+                            />
                         </div>
-                        <div className="space-y-2">
-                            <Label className="text-sm font-medium">Duration (min)</Label>
-                            <Input type="number" value={duration} onChange={e => setDuration(e.target.value)} required className="h-10" />
+                        <div className="space-y-1 w-24">
+                            <Label className="text-xs font-medium">Duration</Label>
+                            <Input type="number" value={duration} onChange={e => setDuration(e.target.value)} required className="h-9" min="15" step="15" />
                         </div>
-                        <div className="flex items-end">
-                            <Button type="submit" disabled={loading} className="w-full h-10 bg-blue-600 hover:bg-blue-700">
-                                {loading ? "Creating..." : <><Plus className="w-4 h-4 mr-1" /> Add Day</>}
-                            </Button>
-                        </div>
+                        <Button type="submit" disabled={loading} className="h-9 bg-blue-600 hover:bg-blue-700">
+                            {loading ? "Creating..." : <><Plus className="w-4 h-4 mr-1" /> Add Day</>}
+                        </Button>
                     </form>
                 </CardContent>
             </Card>

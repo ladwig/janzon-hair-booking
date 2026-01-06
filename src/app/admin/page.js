@@ -80,14 +80,9 @@ export default function AdminPage() {
         <div className="min-h-screen bg-gray-100 p-8">
             <Card className="mb-8">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-2xl font-bold">Admin Dashboard</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Hallo Janzon</CardTitle>
                     <Button onClick={handleLogout} variant="outline">Logout</Button>
                 </CardHeader>
-                <CardContent>
-                    <div className="mt-4">
-                        <p className="text-gray-500">Logged in as: {user.email}</p>
-                    </div>
-                </CardContent>
             </Card>
 
             <AdminBookingManager />

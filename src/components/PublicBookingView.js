@@ -74,7 +74,7 @@ export default function PublicBookingView() {
         setError("");
         try {
             await bookSlot(selectedDay.id, selectedSlotIndex, formData);
-            await fetchDays(); // Refresh data
+            await loadDays(); // Refresh data
             setDialogOpen(false);
         } catch (err) {
             setError(err.message || "Failed to book slot");
@@ -90,7 +90,7 @@ export default function PublicBookingView() {
         try {
             // Client-side validation could mimic server check for better UX, but server is authority
             await cancelSlot(selectedDay.id, selectedSlotIndex, cancelEmail);
-            await fetchDays();
+            await loadDays();
             setDialogOpen(false);
         } catch (err) {
             console.error(err);

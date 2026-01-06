@@ -34,12 +34,21 @@ export default function PublicBookingView() {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        fetchDays();
+        loadDays();
     }, []);
 
-    async function fetchDays() {
+    async function loadDays() {
         const data = await getOpenDays();
-        setDays(data);
+        // Filter out past dates - only show today and future dates
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset to start of day
+
+        const futureDays = data.filter(day => {
+            const dayDate = new Date(day.date);
+            return dayDate >= today;
+        });
+
+        setDays(futureDays);
         setLoading(false);
     }
 

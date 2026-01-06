@@ -14,6 +14,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { format, parse } from "date-fns";
+import { de } from "date-fns/locale";
 
 export default function PublicBookingView() {
     const [days, setDays] = useState([]);
@@ -90,21 +91,21 @@ export default function PublicBookingView() {
     };
 
     if (loading) {
-        return <div className="text-center p-8">Loading availability...</div>;
+        return <div className="text-center p-8">Lade Verfügbarkeit...</div>;
     }
 
     return (
         <div className="w-full max-w-4xl mx-auto space-y-8 mt-8 pb-20">
-            <h2 className="text-3xl font-bold text-center mb-8">Available Appointments</h2>
+            <h2 className="text-3xl font-bold text-center mb-8">Verfügbare Termine</h2>
 
-            {days.length === 0 && <p className="text-center text-gray-500">No appointments available at the moment.</p>}
+            {days.length === 0 && <p className="text-center text-gray-500">Momentan keine Termine verfügbar.</p>}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 sm:px-0">
                 {days.map((day) => (
                     <Card key={day.id} className="overflow-hidden shadow-sm border-gray-200">
                         <CardHeader className="bg-gray-50 border-b pb-4">
                             <CardTitle className="text-lg">
-                                {format(parse(day.date + ' ' + day.startTime.split('T')[1].substring(0, 5), "yyyy-MM-dd HH:mm", new Date()), "EEEE, MMMM do")}
+                                {format(parse(day.date + ' ' + day.startTime.split('T')[1].substring(0, 5), "yyyy-MM-dd HH:mm", new Date()), "EEEE, d. MMMM", { locale: de })}
                             </CardTitle>
                             <div className="text-sm text-gray-500">
                                 {format(new Date(day.startTime), "HH:mm")} - {format(new Date(day.endTime), "HH:mm")}
@@ -143,23 +144,23 @@ export default function PublicBookingView() {
                 <DialogContent className="sm:max-w-[425px] w-[95vw] rounded-lg">
                     <DialogHeader>
                         <DialogTitle>
-                            {dialogType === 'book' ? 'Book Appointment' : 'Manage Booking'}
+                            {dialogType === 'book' ? 'Termin buchen' : 'Buchung verwalten'}
                         </DialogTitle>
                         <DialogDescription>
                             {dialogType === 'book'
-                                ? `Enter your details to book the slot at ${selectedDay && selectedSlotIndex !== null ? format(new Date(selectedDay.slots[selectedSlotIndex].start), "HH:mm") : ''}.`
-                                : `Enter your email to cancel your booking at ${selectedDay && selectedSlotIndex !== null ? format(new Date(selectedDay.slots[selectedSlotIndex].start), "HH:mm") : ''}.`}
+                                ? `Gib deine Daten ein, um den Slot um ${selectedDay && selectedSlotIndex !== null ? format(new Date(selectedDay.slots[selectedSlotIndex].start), "HH:mm") : ''} zu buchen.`
+                                : `Gib deine E-Mail ein, um deine Buchung um ${selectedDay && selectedSlotIndex !== null ? format(new Date(selectedDay.slots[selectedSlotIndex].start), "HH:mm") : ''} zu stornieren.`}
                         </DialogDescription>
                     </DialogHeader>
 
                     {dialogType === 'book' ? (
                         <form onSubmit={onBookSubmit} className="space-y-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="firstName">First Name</Label>
+                                <Label htmlFor="firstName">Vorname</Label>
                                 <Input id="firstName" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} required />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="lastName">Last Name</Label>
+                                <Label htmlFor="lastName">Nachname</Label>
                                 <Input id="lastName" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} required />
                             </div>
                             <div className="grid gap-2">
@@ -168,17 +169,17 @@ export default function PublicBookingView() {
                             </div>
                             {error && <p className="text-red-500 text-sm">{error}</p>}
                             <Button type="submit" className="w-full" disabled={actionLoading}>
-                                {actionLoading ? "Booking..." : "Confirm Booking"}
+                                {actionLoading ? "Buche..." : "Buchung bestätigen"}
                             </Button>
                         </form>
                     ) : (
                         <form onSubmit={onCancelSubmit} className="space-y-4 py-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="cancelEmail">Email verification</Label>
+                                <Label htmlFor="cancelEmail">E-Mail-Verifizierung</Label>
                                 <Input
                                     id="cancelEmail"
                                     type="email"
-                                    placeholder="Enter the email used for booking"
+                                    placeholder="Gib die E-Mail ein, die für die Buchung verwendet wurde"
                                     value={cancelEmail}
                                     onChange={e => setCancelEmail(e.target.value)}
                                     required
@@ -186,7 +187,7 @@ export default function PublicBookingView() {
                             </div>
                             {error && <p className="text-red-500 text-sm">{error}</p>}
                             <Button type="submit" variant="destructive" className="w-full" disabled={actionLoading}>
-                                {actionLoading ? "Processing..." : "Cancel Booking"}
+                                {actionLoading ? "Verarbeite..." : "Buchung stornieren"}
                             </Button>
                         </form>
                     )}

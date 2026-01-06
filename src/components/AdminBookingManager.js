@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { format, parse } from "date-fns";
+import { de } from "date-fns/locale";
 import { Trash2, Calendar, Clock, Users, CheckCircle2, Plus } from "lucide-react";
 
 export default function AdminBookingManager() {
@@ -44,7 +45,7 @@ export default function AdminBookingManager() {
     };
 
     const handleDeleteDay = async (id) => {
-        if (!confirm("Are you sure? This will delete all slots for this day.")) return;
+        if (!confirm("Bist du sicher? Dies löscht alle Slots für diesen Tag.")) return;
         await deleteDay(id);
         await loadDays();
     };
@@ -90,7 +91,7 @@ export default function AdminBookingManager() {
     };
 
     const handleDeleteSlot = async (day, slotIndex) => {
-        if (!confirm("Delete this slot?")) return;
+        if (!confirm("Diesen Slot löschen?")) return;
         const updatedSlots = [...day.slots];
         updatedSlots.splice(slotIndex, 1);
 
@@ -119,7 +120,7 @@ export default function AdminBookingManager() {
     };
 
     const handleConfirmAllSlots = async (day) => {
-        if (!confirm("Confirm all booked slots for this day?")) return;
+        if (!confirm("Alle gebuchten Slots für diesen Tag bestätigen?")) return;
         const updatedSlots = day.slots.map(slot =>
             slot.booker ? { ...slot, status: 'confirmed' } : slot
         );
@@ -145,13 +146,13 @@ export default function AdminBookingManager() {
                 <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-blue-600" />
-                        <CardTitle className="text-base">Create New Open Day</CardTitle>
+                        <CardTitle className="text-base">Neuen Tag erstellen</CardTitle>
                     </div>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleCreateDay} className="flex flex-wrap gap-3 items-end">
                         <div className="space-y-1 flex-1 min-w-[140px]">
-                            <Label className="text-xs font-medium">Date</Label>
+                            <Label className="text-xs font-medium">Datum</Label>
                             <Input type="date" value={newDayDate} onChange={e => setNewDayDate(e.target.value)} required className="h-9" />
                         </div>
                         <div className="space-y-1 w-28">
@@ -168,7 +169,7 @@ export default function AdminBookingManager() {
                             />
                         </div>
                         <div className="space-y-1 w-28">
-                            <Label className="text-xs font-medium">End (h)</Label>
+                            <Label className="text-xs font-medium">Ende (h)</Label>
                             <Input
                                 type="number"
                                 value={endHour}
@@ -181,11 +182,11 @@ export default function AdminBookingManager() {
                             />
                         </div>
                         <div className="space-y-1 w-24">
-                            <Label className="text-xs font-medium">Duration</Label>
+                            <Label className="text-xs font-medium">Dauer</Label>
                             <Input type="number" value={duration} onChange={e => setDuration(e.target.value)} required className="h-9" min="15" step="15" />
                         </div>
                         <Button type="submit" disabled={loading} className="h-9 bg-blue-600 hover:bg-blue-700">
-                            {loading ? "Creating..." : <><Plus className="w-4 h-4 mr-1" /> Add Day</>}
+                            {loading ? "Erstelle..." : <><Plus className="w-4 h-4 mr-1" /> Tag hinzufügen</>}
                         </Button>
                     </form>
                 </CardContent>
@@ -194,15 +195,15 @@ export default function AdminBookingManager() {
             {/* Scheduled Days */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-gray-800">Scheduled Days</h3>
-                    <span className="text-sm text-gray-500">{days.length} day{days.length !== 1 ? 's' : ''}</span>
+                    <h3 className="text-xl font-bold text-gray-800">Geplante Tage</h3>
+                    <span className="text-sm text-gray-500">{days.length} Tag{days.length !== 1 ? 'e' : ''}</span>
                 </div>
 
                 {days.length === 0 && (
                     <Card className="border-dashed">
                         <CardContent className="flex flex-col items-center justify-center py-12 text-gray-400">
                             <Calendar className="w-12 h-12 mb-3 opacity-50" />
-                            <p>No days scheduled yet</p>
+                            <p>Noch keine Tage geplant</p>
                         </CardContent>
                     </Card>
                 )}
@@ -212,12 +213,12 @@ export default function AdminBookingManager() {
                     return (
                         <Card key={day.id} className="overflow-hidden border shadow-sm hover:shadow-md transition-shadow">
                             {/* Day Header */}
-                            <div className="bg-gradient-to-r from-gray-50 to-slate-50 border-b">
+                            <div className="border-b bg-white">
                                 <div className="p-4">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1">
                                             <h4 className="font-bold text-lg text-gray-800 mb-2">
-                                                {format(parse(day.date + ' ' + day.startTime.split('T')[1].substring(0, 5), "yyyy-MM-dd HH:mm", new Date()), "EEEE, MMMM do yyyy")}
+                                                {format(parse(day.date + ' ' + day.startTime.split('T')[1].substring(0, 5), "yyyy-MM-dd HH:mm", new Date()), "EEEE, d. MMMM yyyy", { locale: de })}
                                             </h4>
                                             <div className="flex flex-wrap gap-4 text-sm">
                                                 <div className="flex items-center gap-1.5 text-gray-600">
@@ -226,11 +227,11 @@ export default function AdminBookingManager() {
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-gray-600">
                                                     <Users className="w-4 h-4" />
-                                                    <span>{stats.booked}/{stats.total} booked</span>
+                                                    <span>{stats.booked}/{stats.total} gebucht</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-green-600">
                                                     <CheckCircle2 className="w-4 h-4" />
-                                                    <span>{stats.confirmed} confirmed</span>
+                                                    <span>{stats.confirmed} bestätigt</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -241,7 +242,7 @@ export default function AdminBookingManager() {
                                                 onClick={() => handleConfirmAllSlots(day)}
                                                 className="hidden sm:flex"
                                             >
-                                                Confirm All
+                                                Alle bestätigen
                                             </Button>
                                             <Button variant="destructive" size="sm" onClick={() => handleDeleteDay(day.id)}>
                                                 <Trash2 className="w-4 h-4" />
@@ -304,9 +305,9 @@ function SlotRow({ slot, day, index, onStatusChange, onBookerEdit, onBookerCreat
                         value={slot.status}
                         onChange={(e) => onStatusChange(day, index, e.target.value)}
                     >
-                        <option value="open">Open</option>
-                        <option value="unconfirmed">Unconfirmed</option>
-                        <option value="confirmed">Confirmed</option>
+                        <option value="open">Offen</option>
+                        <option value="unconfirmed">Unbestätigt</option>
+                        <option value="confirmed">Bestätigt</option>
                     </select>
                 </div>
 
@@ -316,13 +317,13 @@ function SlotRow({ slot, day, index, onStatusChange, onBookerEdit, onBookerCreat
                         <>
                             <Input
                                 className="h-9 text-sm"
-                                placeholder="First Name"
+                                placeholder="Vorname"
                                 value={slot.booker?.firstName || ''}
                                 onChange={(e) => onBookerEdit(day, index, 'firstName', e.target.value)}
                             />
                             <Input
                                 className="h-9 text-sm"
-                                placeholder="Last Name"
+                                placeholder="Nachname"
                                 value={slot.booker?.lastName || ''}
                                 onChange={(e) => onBookerEdit(day, index, 'lastName', e.target.value)}
                             />
@@ -338,7 +339,7 @@ function SlotRow({ slot, day, index, onStatusChange, onBookerEdit, onBookerCreat
                         <>
                             <Input
                                 className="h-9 text-sm"
-                                placeholder="First Name"
+                                placeholder="Vorname"
                                 defaultValue=""
                                 onBlur={(e) => {
                                     if (e.target.value) onBookerCreate(day, index, 'firstName', e.target.value);
@@ -346,7 +347,7 @@ function SlotRow({ slot, day, index, onStatusChange, onBookerEdit, onBookerCreat
                             />
                             <Input
                                 className="h-9 text-sm"
-                                placeholder="Last Name"
+                                placeholder="Nachname"
                                 defaultValue=""
                                 onBlur={(e) => {
                                     if (e.target.value) onBookerCreate(day, index, 'lastName', e.target.value);

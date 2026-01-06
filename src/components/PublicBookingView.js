@@ -126,6 +126,15 @@ export default function PublicBookingView() {
 
     return (
         <div className="w-full max-w-5xl mx-auto space-y-6 mt-8 pb-20 px-4">
+            {/* Logo */}
+            <div className="flex justify-center mb-6">
+                <img
+                    src="/logo.png"
+                    alt="Janzon Hair Logo"
+                    className="h-60 w-auto object-contain"
+                />
+            </div>
+
             <h2 className="text-3xl font-bold text-center mb-8">Verfügbare Termine</h2>
 
             {days.length === 0 && <p className="text-center text-gray-500">Momentan keine Termine verfügbar.</p>}

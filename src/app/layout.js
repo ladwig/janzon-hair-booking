@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Waschen, Schneiden, Drönen",
+  title: "Waschen, Schneiden, Dröhnen",
   description: "Janzon Hair Booking",
 };
 
